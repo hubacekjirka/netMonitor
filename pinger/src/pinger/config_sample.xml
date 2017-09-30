@@ -1,0 +1,8 @@
+<config>
+	<pingedAddress>8.8.8.8</pingedAddress>
+	<debug>true</debug>
+	<locId>1</locId>
+	
+	<filePath>C:\\tmp\\out.txt</filePath>
+	<db user="monitor" passwd="monitorPasswd" connString="jdbc:mysql://192.168.0.200:3306/pinger"></db>
+</config>
