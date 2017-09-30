@@ -159,7 +159,6 @@ public class Pinger {
 		String dbPasswd = nnm.getNamedItem("passwd").getTextContent();
 		String dbConnString = nnm.getNamedItem("connString").getTextContent();
 		
-		//Connection con=DriverManager.getConnection("jdbc:mysql://192.168.0.200:3306/pinger","monitor","Monitor/*47");
 		Connection con=DriverManager.getConnection(dbConnString, dbUser, dbPasswd);
 		Statement stmt=con.createStatement();  
 		
