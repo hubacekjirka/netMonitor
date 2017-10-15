@@ -2,7 +2,7 @@
 	<pingedAddress>8.8.8.8</pingedAddress>
 	<debug>true</debug>
 	<locId>1</locId>
-	<bufferSize>5</bufferSize>
+	<bufferSize>60</bufferSize>
 	
 	<writeToFile>false</writeToFile>
 	<writeToDb>true</writeToDb>
