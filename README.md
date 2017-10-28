@@ -14,3 +14,6 @@ There are currently two outputs:
 
 # Visualising output
 Any tool - Excel, PowerBI, R, Tableau - will do the job. I choose to go with Tableau. A setup dashboard is attached in this repository.
+
+# IDE setup
+Git Import Youtube Guide: https://www.youtube.com/watch?v=V42r5REJx-M&t=36s
