@@ -148,7 +148,7 @@ public class Pinger {
 				/* Once we hit the buffer size, flush the buffer to DB or/and file */ 
 				if (genericBuffer.size() == bufferSize) {
 					try {
-						System.out.println("Buffer limit of " + bufferSize + " hit, flushing buffer to file");
+						System.out.println("Buffer limit of " + bufferSize + " hit.");
 						if (writeToFile) writeFile(genericBuffer);
 						if (writeToDb) insertToDb(genericBuffer);
 					} catch (SQLException e) {
@@ -178,6 +178,7 @@ public class Pinger {
 	
 	/* when buffer limit is reached and db insertion is enabled, flush it into the DB */
 	private static void insertToDb(List<HashMap> buffer) throws SQLException,Exception {
+		if (DEBUG) System.out.println("Flushing buffer to database");
 		/* building connection string based on the values stores in the XML configuration file */
 		File fXmlFile = new File(configLocation);
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -215,6 +216,7 @@ public class Pinger {
 	
 	
 	public static void writeFile(List<HashMap> in) throws IOException {
+		if (DEBUG) System.out.println("Flushing buffer to file");
 		String filePath="";
 		try {
 			filePath = getFilePath(configLocation);
