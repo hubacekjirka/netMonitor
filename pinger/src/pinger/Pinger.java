@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,6 +63,45 @@ public class Pinger {
 			System.exit(-1);
 		}
 		
+		/* Starting up housekeeping thread */
+		Runnable runnable = () -> {
+		    try {
+		    	while (1==1) {
+			        String name = Thread.currentThread().getName();
+			        if (DEBUG)
+			        	System.out.println("Running ousekeeping job in " + name);
+			        Connection conn;
+			        
+			        try {
+			        	conn = getConnectionToDb();
+			        	
+			        	
+			        	try {
+			        		Statement stmt = conn.createStatement();
+			        		stmt.executeUpdate("DELETE FROM latency WHERE ts < NOW() - INTERVAL 30 DAY;");
+			        	} catch (Exception e) {
+			        		e.printStackTrace();
+			        	}
+						
+						conn.close();
+					} catch (Exception e) {
+						System.out.println("Oops, unable to perform db maintanance");
+						e.printStackTrace();
+					} 
+					
+			        TimeUnit.SECONDS.sleep(3600);
+		    	}
+		    }
+		    catch (InterruptedException e) {
+		        e.printStackTrace();
+		    }
+		};
+
+		Thread thread = new Thread(runnable);
+		thread.start();
+		
+		
+		/* Starting up pinging endless loop */
 		System.out.println("Entering endless ping loop");
 		while (1 == 1) {
 			runSystemCommand("ping " + ip + " -t");
@@ -179,21 +219,8 @@ public class Pinger {
 	/* when buffer limit is reached and db insertion is enabled, flush it into the DB */
 	private static void insertToDb(List<HashMap> buffer) throws SQLException,Exception {
 		if (DEBUG) System.out.println("Flushing buffer to database");
-		/* building connection string based on the values stores in the XML configuration file */
-		File fXmlFile = new File(configLocation);
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(fXmlFile);
-		doc.getDocumentElement().normalize();
-			
-		NodeList dbNodeList = doc.getDocumentElement().getElementsByTagName("db");		
-		NamedNodeMap nnm = dbNodeList.item(0).getAttributes();
-			
-		String dbUser = nnm.getNamedItem("user").getTextContent();
-		String dbPasswd = nnm.getNamedItem("passwd").getTextContent();
-		String dbConnString = nnm.getNamedItem("connString").getTextContent();
-		
-		Connection con=DriverManager.getConnection(dbConnString, dbUser, dbPasswd);
+						
+		Connection con=getConnectionToDb();
 		Statement stmt=con.createStatement();  
 		
 		/* Iterate over buffer and build up INSERT commands which are being added to a batched INSERT */
@@ -214,6 +241,23 @@ public class Pinger {
 		con.close();
 	}
 	
+	private static Connection getConnectionToDb() throws Exception {
+		/* building connection string based on the values stores in the XML configuration file */
+		File fXmlFile = new File(configLocation);
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(fXmlFile);
+		doc.getDocumentElement().normalize();
+			
+		NodeList dbNodeList = doc.getDocumentElement().getElementsByTagName("db");		
+		NamedNodeMap nnm = dbNodeList.item(0).getAttributes();
+			
+		String dbUser = nnm.getNamedItem("user").getTextContent();
+		String dbPasswd = nnm.getNamedItem("passwd").getTextContent();
+		String dbConnString = nnm.getNamedItem("connString").getTextContent();
+		
+		return DriverManager.getConnection(dbConnString, dbUser, dbPasswd);
+	}
 	
 	public static void writeFile(List<HashMap> in) throws IOException {
 		if (DEBUG) System.out.println("Flushing buffer to file");
